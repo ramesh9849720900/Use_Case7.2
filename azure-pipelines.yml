@@ -9,7 +9,7 @@ variables:
   resourceGroupName: 'myresourcegroup'           # Resource group name
   location: 'EastUS'                             # Azure region
   appServicePlan: 'ASP-myresourcegroup-b87a'             # App Service Plan name
-  webAppName: 'dot-net-webapp'                         # Web App name
+  webAppName: 'Use-case7'                         # Web App name
   sku: 'S1'                                      # SKU for the App Service Plan
 
 steps:
