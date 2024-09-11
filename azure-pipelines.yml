@@ -1,0 +1,61 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  azureSubscription: 'Use_Case7'  # Name of the Azure DevOps service connection
+  resourceGroupName: 'myresourcegroup'           # Resource group name
+  location: 'EastUS'                             # Azure region
+  appServicePlan: 'ASP-myresourcegroup-b87a'             # App Service Plan name
+  webAppName: 'dot-net-webapp'                         # Web App name
+  sku: 'S1'                                      # SKU for the App Service Plan
+
+steps:
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: $(azureSubscription)
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      echo "Creating Resource Group..."
+      # Create a resource group
+      az group create --name $(resourceGroupName) --location $(location)
+
+      echo "Creating App Service Plan..."
+      # Create an App Service plan
+      az appservice plan create \
+        --name $(appServicePlan) \
+        --resource-group $(resourceGroupName) \
+        --location $(location) \
+        --sku $(sku) \
+        --is-linux
+
+      echo "Creating Web App..."
+      # Create a Web App
+      az webapp create \
+        --resource-group $(resourceGroupName) \
+        --plan $(appServicePlan) \
+        --name $(webAppName) \
+        --runtime "DOTNETCORE|3.1"
+
+      echo "Azure Web App $(webAppName) provisioned successfully!"
+
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: $(azureSubscription)
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+      echo "Validating Web App creation..."
+
+      # Check if the web app exists
+      webApp=$(az webapp show --resource-group $(resourceGroupName) --name $(webAppName) --query "state" -o tsv)
+
+      if [[ $webApp == "Running" ]]; then
+        echo "Validation Success: Web App is running."
+      else
+        echo "Validation Failed: Web App is not running."
+        exit 1
+      fi
